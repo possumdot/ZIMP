@@ -8,10 +8,6 @@ change to the players health
 
 class DevCard:
     def __init__(self):
-        """
-
-        :rtype: object
-        """
         self.card_item = None
         self.nine_description = None
         self.nine_item = None

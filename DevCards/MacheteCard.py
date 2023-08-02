@@ -1,7 +1,7 @@
 from DevCards.DevCard import DevCard
 
 
-class CardMachete(DevCard):
+class MacheteCard(DevCard):
 
     def __init__(self):
         super().__init__()

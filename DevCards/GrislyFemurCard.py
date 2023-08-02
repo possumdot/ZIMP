@@ -4,10 +4,12 @@ Each DevCard has one item associated with them
 Each DevCards ALWAYS has a description and potentially an item OR a number of zombies OR either a positive or negative
 change to the players health
 """
+from DevCards.DevCard import DevCard
 
 
-class DevCard:
+class GrislyFemurCard(DevCard):
     def __init__(self):
+        super().__init__()
         self.card_item = "GrislyFemur"
         self.nine_description = "A Grisly Femur lies on the ground"
         self.nine_item = "GrislyFemur"
