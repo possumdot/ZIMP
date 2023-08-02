@@ -30,3 +30,15 @@ class Player:
                 self.item_1 = item
             case 2:
                 self.item_2 = item
+
+    def get_health(self):
+        return self.health
+
+    def get_attack(self):
+        return self.attack
+
+    def get_item_slot_1(self):
+        return self.item_1
+
+    def get_item_slot_2(self):
+        return self.item_2

@@ -1,11 +1,9 @@
 """
-
-"""
-import TheGame
-
-"""
 Starts the game
 """
+
+
+import TheGame
 def main():
     the_game = TheGame
 

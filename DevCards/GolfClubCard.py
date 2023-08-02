@@ -8,15 +8,16 @@ change to the players health
 
 class DevCard:
     def __init__(self):
-        self.nine_description = None
+        self.card_item = "GolfClub"
+        self.nine_description = "Slip on some nasty goo"
         self.nine_item = None
         self.nine_zombies = None
-        self.nine_health_change = None
-        self.ten_description = None
+        self.nine_health_change = -1
+        self.ten_description = "4 zombies stare back at you"
         self.ten_item = None
-        self.ten_zombies = None
+        self.ten_zombies = 4
         self.ten_health_change = None
-        self.eleven_description = None
+        self.eleven_description = "The smell of blood is in the air"
         self.eleven_item = None
         self.eleven_zombies = None
         self.eleven_health_change = None
