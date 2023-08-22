@@ -10,6 +10,8 @@ class Player:
         self.attack = 1
         self.item_1 = None
         self.item_2 = None
+        self.x = None
+        self.y = None
 
     def heal(self, amount):
         self.health += amount
@@ -42,3 +44,7 @@ class Player:
 
     def get_item_slot_2(self):
         return self.item_2
+
+    def move(self, x, y):
+        self.x = x
+        self.y = y

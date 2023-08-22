@@ -7,7 +7,7 @@ change to the players health
 from DevCards.DevCard import DevCard
 
 
-class SodaCard(DevCard):
+class OilCard(DevCard):
     def __init__(self):
         super().__init__()
         self.card_item = "Oil"
