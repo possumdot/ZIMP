@@ -6,6 +6,7 @@ class Yard(Tile):
 
     def __init__(self):
         self.name = "Yard"
+        self.indoor = False
         self.effect = False
         self.exits = {
             "n": False,

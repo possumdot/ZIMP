@@ -5,6 +5,7 @@ class Kitchen(Tile):
 
     def __init__(self):
         self.name = "Kitchen"
+        self.indoor = True
         # +1  Health if turn ends here
         self.effect = True
         self.exits = {

@@ -8,8 +8,7 @@ class Player:
     def __init__(self):
         self.health = 6
         self.attack = 1
-        self.item_1 = None
-        self.item_2 = None
+        self.items = {"item1": None, "item2": None}
         self.x = None
         self.y = None
 
@@ -39,12 +38,30 @@ class Player:
     def get_attack(self):
         return self.attack
 
-    def get_item_slot_1(self):
-        return self.item_1
+    def get_items(self):
+        return self.items.values()
 
-    def get_item_slot_2(self):
-        return self.item_2
+    def get_item1(self):
+        if self.items["item1"] is None:
+            return "Nothing"
+        else:
+            return self.item_string_builder("item1")
+
+    def get_item2(self):
+        if self.items["item2"] is None:
+            return "Nothing"
+        else:
+            return self.item_string_builder("item2")
+
+    def item_string_builder(self, item):
+        if self.items[item].has_uses:
+            return f"{self.items[item].name} Uses remaining: {self.items[item].uses_remaining}"
+        else:
+            return f"{self.items[item].name}"
 
     def move(self, x, y):
         self.x = x
         self.y = y
+
+    def take_damage(self, damage):
+        self.health -= damage

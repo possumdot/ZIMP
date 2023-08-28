@@ -5,21 +5,21 @@ Each DevCards ALWAYS has a description and potentially an item OR a number of zo
 change to the players health
 """
 from DevCards.DevCard import DevCard
+from Items.Chainsaw import Chainsaw
 
 
 class ChainsawCard(DevCard):
     def __init__(self):
-        super().__init__()
-        self.card_item = "Chainsaw"
-        self.nine_description = "3 zombies are hanging around"
-        self.nine_item = None
-        self.nine_zombies = 3
-        self.nine_health_change = None
-        self.ten_description = "You hear terrible screams"
-        self.ten_item = None
-        self.ten_zombies = None
-        self.ten_health_change = None
-        self.eleven_description = "5 zombies. 5 OF THEM."
-        self.eleven_item = None
-        self.eleven_zombies = 5
-        self.eleven_health_change = None
+        self.card_item = Chainsaw()
+        self.nine_info = {"action": "zombies",
+                          "description": "3 zombies are hanging around",
+                          "zombies": 3,
+                          "health_change": 0}
+        self.ten_info = {"action": "event",
+                         "description": "You hear terrible screams",
+                         "zombies": None,
+                         "health_change": 0}
+        self.eleven_info = {"action": "zombies",
+                            "description": "5 zombies. 5 OF THEM.",
+                            "zombies": 5,
+                            "health_change": 0}

@@ -6,6 +6,7 @@ class Graveyard(Tile):
 
     def __init__(self):
         self.name = "Graveyard"
+        self.indoor = False
         # Can choose to resolve a second Dev card to bury the totem and win the game
         self.effect = True
         self.exits = {

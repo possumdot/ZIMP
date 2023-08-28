@@ -5,6 +5,7 @@ class Garden(Tile):
 
     def __init__(self):
         self.name = "Garden"
+        self.indoor = False
         # +1  Health if turn ends here
         self.effect = True
         self.exits = {

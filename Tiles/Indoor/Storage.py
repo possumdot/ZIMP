@@ -5,6 +5,7 @@ class Storage(Tile):
 
     def __init__(self):
         self.name = "Storage"
+        self.indoor = True
         self.effect = True
         self.exits = {
             "n": True,

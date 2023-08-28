@@ -6,6 +6,7 @@ class Foyer(Tile):
 
     def __init__(self):
         self.name = "Foyer"
+        self.indoor = True
         self.effect = False
         self.exits = {
             "n": True,

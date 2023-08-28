@@ -5,21 +5,22 @@ Each DevCards ALWAYS has a description and potentially an item OR a number of zo
 change to the players health
 """
 from DevCards.DevCard import DevCard
+from Items.Soda import Soda
 
 
 class SodaCard(DevCard):
     def __init__(self):
         super().__init__()
-        self.card_item = "SodaCan"
-        self.nine_description = "Candybar in your pocket"
-        self.nine_item = None
-        self.nine_zombies = None
-        self.nine_health_change = 1
-        self.ten_description = "A can of soda sits on the ground enticingly, it doesn't look suspicious"
-        self.ten_item = "SodaCan"
-        self.ten_zombies = None
-        self.ten_health_change = None
-        self.eleven_description = "4 zombies block your exit"
-        self.eleven_item = None
-        self.eleven_zombies = 4
-        self.eleven_health_change = None
+        self.card_item = Soda()
+        self.nine_info = {"action": "event",
+                          "description": "Candybar in your pocket",
+                          "zombies": None,
+                          "health_change": 1}
+        self.ten_info = {"action": "item",
+                         "description": "You see an Item",
+                         "zombies": None,
+                         "health_change": 0}
+        self.eleven_info = {"action": "zombies",
+                            "description": "4 zombies block your exit",
+                            "zombies": 4,
+                            "health_change": 0}
