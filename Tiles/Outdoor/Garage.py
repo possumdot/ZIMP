@@ -6,7 +6,7 @@ class Garage(Tile):
     def __init__(self):
         self.name = "Garage"
         self.indoor = False
-        self.effect = False
+        self.effect = None
         self.exits = {
             "n": False,
             "e": False,

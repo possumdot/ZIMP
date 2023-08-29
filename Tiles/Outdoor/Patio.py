@@ -7,7 +7,8 @@ class Patio(Tile):
         self.name = "Patio"
         self.indoor = False
         # This is the only tile that can go inside
-        self.effect = True
+        self.effect = "patio"
+        self.outdoor_exit = "n"
         self.exits = {
             "n": True,
             "e": True,

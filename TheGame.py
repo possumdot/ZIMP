@@ -1,5 +1,8 @@
+import json
+import pickle
 import random
 from cmd import Cmd
+import os
 
 from Player import Player
 from DevCards.CandleCard import CandleCard
@@ -24,6 +27,7 @@ from Tiles.Outdoor.Garden import Garden
 from Tiles.Outdoor.Graveyard import Graveyard
 from Tiles.Outdoor.SittingArea import SittingArea
 from Tiles.Outdoor.Yard import Yard
+from database import Database
 
 
 class TheGame(Cmd):
@@ -33,55 +37,47 @@ class TheGame(Cmd):
         self.prompt = ">>> "
         self.time = 2100
         self.dev_card_deck = []
+        self.dev_card_deck_strings = []
         self.indoor_tile_deck = []
+        self.indoor_tile_deck_strings = []
         self.outdoor_tile_deck = []
+        self.outdoor_tile_deck_strings = []
         self.current_tiles = {}
         self.current_turn = 0
-        self.game_state = None
+        self.game_turn_state = None
         self.zombie_count = 0
         self.item_on_ground = None
 
-    # def game_loop(self):
-    #    # Start player at x = 10, y = 10 in the Lobby
-    #    # 1. Choose an exit door into a new room or a room that already existed
-    #    # 2. If a new room, draw and place an indoor tile,
-    #    self.first_move()
-    #    game_command = self.get_game_command()
-    #    while game_command[0].lower() != "exit":
-    #        # if time is 2400, game time has run out and the player loses
-    #        if self.time != 2400:
-    #            match game_command[0].lower():
-    #                case "move":
-    #                    break
-    #                case _:
-    #                    print(f"{game_command[0]} is not a valid command, please enter a valid command."
-    #                          f" Type Help for a list")
-    #        else:
-    #            game_command = input("Your time has run out and the zombies win, type Replay to start again, Stats to"
-    #                                 "view your stats or Exit to close the game")
-
     def do_start(self, args):
         """Starts the game, only usable if the game hasn't already started."""
-        if self.is_command_valid("start"):
-            self.setup_game()
-            self.game_state = "free"
-        else:
+        try:
+            if self.is_command_valid("start"):
+                self.setup_game()
+                self.game_turn_state = "free"
+            else:
+                raise ValueError
+        except ValueError:
             print("The game is currently in progress. Please type RESTART to start the game again")
+            pass
 
     def do_restart(self, args):
         """Restarts a game in progress"""
-        if self.is_command_valid("restart"):
-            confirm_restart = input("Are you sure you want to restart? Y/N\n"
-                                    "").lower()[0]
-            if confirm_restart == "y":
-                self.setup_game()
-            elif confirm_restart == "n":
-                pass
+        try:
+            if self.is_command_valid("restart"):
+                confirm_restart = input("Are you sure you want to restart? Y/N\n"
+                                        "").lower()[0]
+                if confirm_restart == "y":
+                    self.setup_game()
+                elif confirm_restart == "n":
+                    pass
+                else:
+                    print("You didn't type YES or No. The game will resume")
             else:
-                print("You didn't type YES or No. The game will resume")
-        else:
+                raise ValueError
+        except ValueError:
             print("The game hasn't started yet, please type START to start the game or LOAD [filename] to load a saved"
                   " game")
+            pass
 
     def setup_game(self):
         print("Welcome to Zombie in my Pocket. Type Help to view your available commands."
@@ -102,16 +98,15 @@ class TheGame(Cmd):
     def do_move(self, args):
         """move [direction]
         Enter a direction to move in, N E W S or North East West South. Case doesn\'t matter."""
-        if self.is_command_valid("move"):
-            args = self.parse_args(args)
-            self.check_valid_move(args[0])
-            self.update_prompt()
-        else:
-            if self.game_state() == "zombies":
+        try:
+            if self.is_command_valid("move"):
+                args = self.parse_args(args)
+                self.check_valid_move(args[0])
+                self.update_prompt()
+            elif self.game_turn_state == "zombies":
                 print("You can't move right now, there are zombies to fight")
-            elif self.game_state() is None:
-                print("The game hasn't started yet.\n"
-                      "Please type Start to start a new game, or Load [filename] to load a game from file")
+        except:
+            print("Something has gone wrong in the do_move method")
 
     def check_valid_move(self, direction):
         if direction == "":
@@ -135,15 +130,18 @@ class TheGame(Cmd):
                 print("There is no exit here")
 
     def move_player(self, direction):
-        match direction:
-            case "n":
-                self.player.move(self.get_player_x(), self.get_player_y() - 1)
-            case "e":
-                self.player.move(self.get_player_x() + 1, self.get_player_y())
-            case "w":
-                self.player.move(self.get_player_x() - 1, self.get_player_y())
-            case "s":
-                self.player.move(self.get_player_x(), self.get_player_y() + 1)
+        try:
+            match direction:
+                case "n":
+                    self.player.move(self.get_player_x(), self.get_player_y() - 1)
+                case "e":
+                    self.player.move(self.get_player_x() + 1, self.get_player_y())
+                case "w":
+                    self.player.move(self.get_player_x() - 1, self.get_player_y())
+                case "s":
+                    self.player.move(self.get_player_x(), self.get_player_y() + 1)
+        except ValueError:
+            print("Something has gone wrong in the move player method")
 
     def get_player_x(self):
         return self.player.x
@@ -192,54 +190,128 @@ class TheGame(Cmd):
 
     # returns a card and removes it from the active deck, if no more cards exists, time passes
     def draw_dev_card(self):
-        if len(self.dev_card_deck) > 0:
-            result = random.randint(0, len(self.dev_card_deck) - 1)
-            return self.dev_card_deck.pop(result)
-        else:
-            self.get_dev_card_deck()
+        if len(self.dev_card_deck) == 0:
+            self.dev_card_deck = self.get_dev_card_deck()
             self.shuffle_dev_card_deck()
             self.time_passes()
+        result = random.randint(0, len(self.dev_card_deck) - 1)
+        return self.dev_card_deck.pop(result)
+
+    def do_load(self, args):
+        """
+        load [source] [savename]
+        [source] is either [file] or [database]
+        [savename] is the name of the saved game or filename
+        """
+        args = self.parse_args(args)
+        source = args[0]
+        if source == "":
+            source = input("Where do you want to load your save from? file/database ").lower()
+        if len(args) == 1:
+            savename = input("What is the name of the save file? ")
+        else:
+            savename = args[1]
+
+    #            self.load_from_file(savename)
+    #        if source == "file":
+    #        elif source == "database":
+    #            self.load_from_database(savename)
+
+    #    def load_from_file(self, filename):
+
+    #    def load_from_database(self, savename):
+
+    def do_save(self, args):
+        """
+        save [source] [savename]
+        [source] is either [file] or [database]
+        [savename] is the name of the saved game or filename
+        """
+        args = self.parse_args(args)
+        source = args[0]
+        destination = args[0]
+        if source == "":
+            source = input("Where do you want to load your save from? file/database ").lower()
+        if len(args) == 1:
+            savename = input("What is the name of the save file? ")
+        else:
+            savename = args[1]
+        if destination == "file":
+            self.save_to_file(savename)
+
+    def save_to_file(self, savename):
+        print("saving")
+        json_data = {"player": json.dumps(self.player.get_json_elements()),
+                     "time": self.time,
+                     "dev_card_deck": self.dev_card_deck,
+                     "indoor_tile_deck": self.indoor_tile_deck,
+                     "outdoor_tile_deck": self.outdoor_tile_deck,
+                     "current_tiles": self.current_tiles,
+                     "current_turn": self.current_turn,
+                     "game_state_turn": self.game_turn_state,
+                     "zombie_count": self.zombie_count,
+                     "item_on_ground": self.item_on_ground,
+                     }
+        with open(savename, "x") as file:
+            json.dump(json_data, file)
 
     def resolve_dev_card(self):
         dev_card_action = self.get_dev_card_info(self.draw_dev_card())
-        match dev_card_action["action"]:
-            case "event":
-                self.dev_card_event_action(dev_card_action)
-            case "zombies":
-                self.dev_card_zombies_action(dev_card_action)
-            case "item":
-                self.dev_card_item_action(self.draw_dev_card())
-            case _:
-                print("Something has gone wrong with the action")
+        try:
+            match dev_card_action["action"]:
+                case "event":
+                    self.dev_card_event_action(dev_card_action)
+                case "zombies":
+                    self.dev_card_zombies_action(dev_card_action)
+                case "item":
+                    # draws another dev card to find the item
+                    self.dev_card_item_action(self.draw_dev_card())
+        except ValueError:
+            print("Something has gone wrong with the resolve_dev_card method")
 
     # Get the info dict from the DevCard relating to the current in-game time
     def get_dev_card_info(self, dev_card):
-        match self.time:
-            case 2100:
-                return dev_card.nine_info
-            case 2200:
-                return dev_card.ten_info
-            case 2300:
-                return dev_card.eleven_info
-            case _:
-                return "Something has gone wrong with the time"
+        try:
+            match self.time:
+                case 2100:
+                    return dev_card.nine_info
+                case 2200:
+                    return dev_card.ten_info
+                case 2300:
+                    return dev_card.eleven_info
+        except AttributeError:
+            print("Something has gone wrong in get_dev_card_info")
+
+#    def do_database(self, args):
+#        database = Database()
+#        database.create_tables()
+#        item_to_add = pickle.dumps(ChainsawCard())
+#        print(type(item_to_add))
+#        database.add_item_to_table(["Chainsaw", item_to_add])
+#        print(pickle.loads(database.get_item_from_table(["Chainsaw"])[1]))
 
     def dev_card_event_action(self, dev_card_action):
-        print(dev_card_action["description"])
-        if dev_card_action["health_change"] > 0:
-            print(f"You gain {dev_card_action['health_change']} health")
-            self.player.heal(dev_card_action["health_change"])
-        elif dev_card_action["health_change"] < 0:
-            print(f"You lose {dev_card_action['health_change']} health")
-            self.player.heal(dev_card_action["health_change"])
-        else:
-            print("Nothing else happens")
+        try:
+            print(dev_card_action["description"])
+            if dev_card_action["health_change"] > 0:
+                print(f"You gain {dev_card_action['health_change']} health")
+                self.player.heal(dev_card_action["health_change"])
+            elif dev_card_action["health_change"] < 0:
+                print(f"You lose {dev_card_action['health_change']} health")
+                self.player.heal(dev_card_action["health_change"])
+            else:
+                print("Nothing else happens")
+        except AttributeError:
+            print("Something has gone wrong with the dev card event action")
 
     def dev_card_zombies_action(self, dev_card_action):
-        print(dev_card_action["description"])
-        print("You can stand and FIGHT or RUN")
-        self.game_state = "zombies"
-        self.zombie_count = dev_card_action["zombies"]
+        try:
+            print(dev_card_action["description"])
+            print("You can stand and FIGHT or RUN")
+            self.game_turn_state = "zombies"
+            self.zombie_count = dev_card_action["zombies"]
+        except KeyError:
+            print("No Key found in dev card zombies action method")
 
     def do_fight(self, args):
         """Fight [item1] [item2]
@@ -273,7 +345,7 @@ class TheGame(Cmd):
             self.player.take_damage(damage)
             print(f"You fight off the zombies and take {damage} damage")
         self.zombie_count = 0
-        self.game_state = "free"
+        self.game_turn_state = "free"
         self.update_prompt()
 
     def dev_card_item_action(self, dev_card):
@@ -336,48 +408,106 @@ class TheGame(Cmd):
         if args == "":
             return [""]
         else:
-            return args.split()
+            return args.lower().split()
 
     def update_prompt(self):
-        self.prompt = (f"Health: {self.player.get_health()} \n"
-                       f"Item1: {self.player.get_item1()} \n"
-                       f"Item2: {self.player.get_item2()} \n"
-                       f">>> ")
+        self.prompt = self.prompt_builder()
+
+    def prompt_builder(self):
+        self.get_map()
+        the_string = (f"Health: {self.player.get_health()} \n"
+                      f"Item1: {self.player.get_item1()} \n"
+                      f"Item2: {self.player.get_item2()} \n")
+        if self.zombie_count > 0:
+            the_string = the_string + f"Zombies: {self.zombie_count} \n"
+        if self.item_on_ground is not None:
+            the_string = the_string + f"Item on Ground: {self.item_on_ground.name} \n"
+        the_string = the_string + ">>>"
+        return the_string
 
     def is_command_valid(self, command):
-        match command:
-            case "start":
-                if self.game_state is None:
-                    return True
+        os.system('cls')
+        if self.game_turn_state is not None:
+            match command:
+                case "start":
+                    if self.game_turn_state is None:
+                        return True
+                    else:
+                        return False
+                case "fight":
+                    if self.game_turn_state == "zombies":
+                        return True
+                    else:
+                        return False
+                case "run":
+                    if self.game_turn_state == "zombies":
+                        return True
+                    else:
+                        return False
+                case "cower":
+                    pass
+                case "move":
+                    if self.game_turn_state == "free":
+                        return True
+                    else:
+                        return False
+                case "restart":
+                    if self.game_turn_state is None:
+                        return False
+                    else:
+                        return True
+                case "pickup":
+                    if self.game_turn_state == "free":
+                        return True
+                    else:
+                        return False
+                case _:
+                    pass
+                    # throw exception
+        elif self.game_turn_state is None and command == "start":
+            return True
+        else:
+            print("The game hasn't started yet.\n"
+                  "Please type Start to start a new game, or Load [filename] to load a game from file")
+            return False
+
+    def get_map(self):
+        map_dict = {}
+        x_coord = self.player.x
+        y_coord = self.player.y
+        count = 0
+        line_1 = ""
+        line_2 = ""
+        line_3 = ""
+        for y in range(y_coord - 2, y_coord + 3):
+            count += 1
+            line_1 = ""
+            line_2 = ""
+            line_3 = ""
+            for x in range(x_coord - 2, x_coord + 3):
+                if self.current_tiles.get((x, y)) is None:
+                    line_1 = line_1 + "   "
+                    line_2 = line_2 + "   "
+                    line_3 = line_3 + "   "
                 else:
-                    return False
-            case "fight":
-                if self.game_state == "zombies":
-                    return True
-                else:
-                    return False
-            case "run":
-                if self.game_state == "zombies":
-                    return True
-                else:
-                    return False
-            case "cower":
-                pass
-            case "move":
-                if self.game_state == "free":
-                    return True
-                else:
-                    return False
-            case "restart":
-                if self.game_state is None:
-                    return False
-                else:
-                    return True
-            case "pickup":
-                if self.game_state == "free":
-                    return True
-                else:
-                    return False
-            case _:
-                print("The game hasn't started yet.\n"
-                      "Please type Start to start a new game, or Load [filename] to load a game from file")
+                    north_exit = " "
+                    east_exit = " "
+                    west_exit = " "
+                    south_exit = " "
+                    player_present = " "
+                    if not self.current_tiles[x, y].exits["n"]:
+                        north_exit = "━"
+                    if not self.current_tiles[x, y].exits["e"]:
+                        east_exit = "┃"
+                    if not self.current_tiles[x, y].exits["w"]:
+                        west_exit = "┃"
+                    if not self.current_tiles[x, y].exits["s"]:
+                        south_exit = "━"
+                    if self.get_player_x() == x and self.get_player_y() == y:
+                        player_present = "X"
+                    line_1 = line_1 + f"┏{north_exit}┓"
+                    line_2 = line_2 + f"{west_exit}{player_present}{east_exit}"
+                    line_3 = line_3 + f"┗{south_exit}┛"
+            print(line_1)
+            print(line_2)
+            print(line_3)

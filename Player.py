@@ -15,9 +15,6 @@ class Player:
     def heal(self, amount):
         self.health += amount
 
-    def take_damage(self, amount):
-        self.health -= amount
-
     def drop_item(self, item_slot):
         match item_slot:
             case 1:
@@ -65,3 +62,6 @@ class Player:
 
     def take_damage(self, damage):
         self.health -= damage
+
+    def get_json_elements(self):
+        return {"health": self.health, "items": self.items, "x":self.x, "y": self.y}

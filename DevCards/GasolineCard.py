@@ -10,7 +10,6 @@ from Items.Gasoline import Gasoline
 
 class GasolineCard(DevCard):
     def __init__(self):
-        super().__init__()
         self.card_item = Gasoline()
         self.nine_info = {"action": "zombies",
                           "description": "4 zombies shamble about",

@@ -7,7 +7,7 @@ class Garden(Tile):
         self.name = "Garden"
         self.indoor = False
         # +1  Health if turn ends here
-        self.effect = True
+        self.effect = "heal"
         self.exits = {
             "n": False,
             "e": True,
