@@ -1,0 +1,43 @@
+Setup
+
+Indoor Turn Sequence
+1. Choose an exit door to a new tile
+2. If a new tile, draw and place an Indoor tile (new tile must have an exit that meets the exit of the room you left)
+3. Draw a Dev card (ff no cards left, see Time Passes)
+	Check Dev card for what happens at the ingame time
+		Item: draw another Dev card and collect that item
+		Zombies: enter combat
+		Event: add or subtract health
+4. Follow instructions on the tile card you end on
+
+Outdoor Turn Sequence
+1. Choose an exit door to a new tile
+2. If a new tile, draw and place an Outdoor tile (new tiles hedge must line up with previous tiles hedge)
+3. Draw a Dev card (ff no cards left, see Time Passes)
+	Check Dev card for what happens at the ingame time
+		Item: draw another Dev card and collect that item
+		Zombies: enter combat
+		Event: add or subtract health
+4. Follow instructions on the tile card you end on
+
+Time Passes
+1. The game starts at 9pm
+2. An hour passes each time you draw a dev card and none are left
+3. Dev cards get reshuffled and top 2 cards get removed
+
+Combat
+1. (optional) Running Away
+	Instead of engaging in combat, the player can instead choose to run away back to a previous tile
+	1. The zombies swipe at you as you leave and the player takes 1 damage
+	2. No dev card is drawn
+2. Subtract the players Attack score from the amount of Zombies to determine how much health the player loses during the fight (no more than 4 health lost per fight)
+	The player can use an item to attack if they have an appropriate item
+
+Cowering
+1. After a turn sequence has been completed, you may choose to cower
+2. You regain 3 health points but must discard a Dev Card
+
+Items
+1. If a drawn Dev cards time action is an item, you may draw another Dev card and have the chance to collect that item
+2. You may only hold 2 items
+3. You can Discard an item and it exists on the tile you're on until you leave the tile
