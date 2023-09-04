@@ -8,7 +8,9 @@ class Player:
     def __init__(self):
         self.health = 6
         self.attack = 1
-        self.items = {"item1": None, "item2": None}
+        self.items = {
+            "item1": None,
+            "item2": None}
         self.x = None
         self.y = None
 

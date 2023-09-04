@@ -426,6 +426,7 @@ class TheGame(Cmd):
         return the_string
 
     def is_command_valid(self, command):
+        # clears the cmd but only if open through Windows cmd prompt
         os.system('cls')
         if self.game_turn_state is not None:
             match command:
@@ -472,7 +473,6 @@ class TheGame(Cmd):
             return False
 
     def get_map(self):
-        map_dict = {}
         x_coord = self.player.x
         y_coord = self.player.y
         count = 0

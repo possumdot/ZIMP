@@ -3,7 +3,7 @@ Setup
 Indoor Turn Sequence
 1. Choose an exit door to a new tile
 2. If a new tile, draw and place an Indoor tile (new tile must have an exit that meets the exit of the room you left)
-3. Draw a Dev card (ff no cards left, see Time Passes)
+3. Draw a Dev card (if no cards left, see Time Passes)
 	Check Dev card for what happens at the ingame time
 		Item: draw another Dev card and collect that item
 		Zombies: enter combat
