@@ -2,17 +2,36 @@
 Players have a starting health of 6 and a starting attack of 1
 Players can only hold 2 items at a time
 """
+import json
 
 
 class Player:
-    def __init__(self):
-        self.health = 6
+    def __init__(self, health: int, has_totem: bool, x:int, y: int, item1=None, item2=None):
+        self.health = health
         self.attack = 1
-        self.items = {
-            "item1": None,
-            "item2": None}
-        self.x = None
-        self.y = None
+        self.items = {"item1": item1,
+                      "item2": item2}
+        self.has_totem = has_totem
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+                          sort_keys=True, indent=4)
+
+    def __repr__(self):
+        return self.__str__()
+
+    # based on https://changsin.medium.com/how-to-serialize-a-class-object-to-json-in-python-849697a0cd3
+    def __iter__(self):
+        yield from {
+            "health": self.health,
+            "attack": self.attack,
+            "items": self.items,
+            "has_totem": self.has_totem,
+            "x": self.x,
+            "y": self.y
+        }.items()
 
     def heal(self, amount):
         self.health += amount
@@ -20,16 +39,16 @@ class Player:
     def drop_item(self, item_slot):
         match item_slot:
             case 1:
-                self.item_1 = None
+                self.items["item1"] = None
             case 2:
-                self.item_2 = None
+                self.items["item2"] = None
 
     def give_item(self, item, item_slot):
         match item_slot:
             case 1:
-                self.item_1 = item
+                self.items["item1"] = item
             case 2:
-                self.item_2 = item
+                self.items["item2"] = item
 
     def get_health(self):
         return self.health
@@ -64,6 +83,3 @@ class Player:
 
     def take_damage(self, damage):
         self.health -= damage
-
-    def get_json_elements(self):
-        return {"health": self.health, "items": self.items, "x":self.x, "y": self.y}
