@@ -6,7 +6,7 @@ import json
 
 
 class Player:
-    def __init__(self, health: int, has_totem: bool, x:int, y: int, item1=None, item2=None):
+    def __init__(self, health: int, has_totem: bool, x: int, y: int, item1=None, item2=None):
         self.health = health
         self.attack = 1
         self.items = {"item1": item1,

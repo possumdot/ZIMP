@@ -1,5 +1,5 @@
 from DevCards.DevCard import DevCard
-from Items.Machete import Machete
+from Items.machete import Machete
 
 
 class MacheteCard(DevCard):

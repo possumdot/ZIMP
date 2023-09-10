@@ -35,7 +35,7 @@ class Player:
 
     def add_item(self, item, item_slot=None) -> str:
         if item_slot is None and len(self.items) < 2:
-            self.items.append(item)
+            self.items[item]
             return f"You picked up {item}"
         elif item_slot is None and len(self.items) >= 2:
             return "You can't carry more than two items"

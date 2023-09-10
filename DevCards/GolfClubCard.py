@@ -5,7 +5,7 @@ Each DevCards ALWAYS has a description and potentially an item OR a number of zo
 change to the players health
 """
 from DevCards.DevCard import DevCard
-from Items.GolfClub import GolfClub
+from Items.golfclub import GolfClub
 
 class GolfClubCard(DevCard):
     def __init__(self):

@@ -4,6 +4,8 @@ import random
 from cmd import Cmd
 import os
 
+import DevCards.DevCard
+from Items.Item import Item
 from Player import Player
 from DevCards.CandleCard import CandleCard
 from DevCards.ChainsawCard import ChainsawCard
@@ -11,9 +13,9 @@ from DevCards.GasolineCard import GasolineCard
 from DevCards.GolfClubCard import GolfClubCard
 from DevCards.GrislyFemurCard import GrislyFemurCard
 from DevCards.MacheteCard import MacheteCard
-from DevCards.NailBoardCard import NailBoardCard
+from DevCards.BoardWithNailsCard import BoardWithNailsCard
 from DevCards.OilCard import OilCard
-from DevCards.SodaCard import SodaCard
+from DevCards.CanOfSodaCard import CanOfSodaCard
 from Tiles.Indoor.Bathroom import Bathroom
 from Tiles.Indoor.Bedroom import Bedroom
 from Tiles.Indoor.DiningRoom import DiningRoom
@@ -27,6 +29,15 @@ from Tiles.Outdoor.Garden import Garden
 from Tiles.Outdoor.Graveyard import Graveyard
 from Tiles.Outdoor.SittingArea import SittingArea
 from Tiles.Outdoor.Yard import Yard
+from Items.candle import Candle
+from Items.chainsaw import Chainsaw
+from Items.boardwithnails import BoardWithNails
+from Items.gasoline import Gasoline
+from Items.golfclub import GolfClub
+from Items.grislyfemur import GrislyFemur
+from Items.machete import Machete
+from Items.oil import Oil
+from Items.canofsoda import CanOfSoda
 from database import Database
 from game_info import GameInfo
 
@@ -74,11 +85,12 @@ class TheGame(Cmd):
     def setup_game(self):
         print("Welcome to Zombie in my Pocket. Type Help to view your available commands."
               "\n You're standing in the foyer of a house. There a door to the North of you.")
+        self.game_info = GameInfo()
         self.game_info.current_turn = 1
         self.game_info.player = Player(6, False, 10, 10)
         # place the Foyer card on the table
         foyer_tile = Foyer()
-        self.game_info.current_tiles["(10, 10)"] = foyer_tile
+        self.game_info.current_tiles["10 10"] = foyer_tile
         self.game_info.player.move(10, 10)
         # shuffle Outdoor and Indoor tiles into separate decks
         self.game_info.indoor_tile_deck = self.get_indoor_tile_deck()
@@ -86,19 +98,18 @@ class TheGame(Cmd):
         # shuffle the Dev cards and discard the top 2 cards
         self.game_info.dev_card_deck = self.get_dev_card_deck()
         self.shuffle_dev_card_deck()
+        self.game_info.game_turn_state = "free"
+        self.update_prompt()
 
     def do_move(self, args):
         """move [direction]
         Enter a direction to move in, N E W S or North East West South. Case doesn't matter."""
-        try:
-            if self.is_command_valid("move"):
-                args = self.parse_args(args)
-                self.check_valid_move(args[0])
-                self.update_prompt()
-            elif self.game_info.game_turn_state == "zombies":
-                print("You can't move right now, there are zombies to fight")
-        except:
-            print("Something has gone wrong in the do_move method")
+        if self.is_command_valid("move"):
+            args = self.parse_args(args)
+            self.check_valid_move(args[0])
+            self.update_prompt()
+        elif self.game_info.game_turn_state == "zombies":
+            print("You can't move right now, there are zombies to fight")
 
     def check_valid_move(self, direction):
         if direction == "":
@@ -107,7 +118,7 @@ class TheGame(Cmd):
         valid_directions = ["n", "north", "e", "east", "w", "west", "s", "south"]
         if direction in valid_directions:
             # check the tile_dictionary for x,y coordinates as tuple,
-            coords = (self.get_player_x(), self.get_player_y())
+            coords = f"{self.get_player_x()} {self.get_player_y()}"
             # assign the tile object to a variable
             current_tile = self.game_info.current_tiles[coords]
             # check the objects exit in direction you want to move
@@ -148,9 +159,9 @@ class TheGame(Cmd):
         golfclub_card = GolfClubCard()
         grislyfemur_card = GrislyFemurCard()
         machete_card = MacheteCard()
-        nailboard_card = NailBoardCard()
+        nailboard_card = BoardWithNailsCard()
         oil_card = OilCard()
-        soda_card = SodaCard()
+        soda_card = CanOfSodaCard()
         return [candle_card, chainsaw_card, gasoline_card, golfclub_card, grislyfemur_card, machete_card,
                 nailboard_card, oil_card, soda_card]
 
@@ -197,21 +208,71 @@ class TheGame(Cmd):
         """
         args = self.parse_args(args)
         source = args[0]
-        if source == "":
-            source = input("Where do you want to load your save from? file/database ").lower()
-        if len(args) == 1:
-            savename = input("What is the name of the save file? ")
-        else:
-            savename = args[1]
+        try:
+            if source == "":
+                source = input("Where do you want to load your save from? file/database ").lower()
+                if source not in ["file", "database"]:
+                    raise ValueError("You need to enter either file or database. Please try again")
+            if len(args) == 1:
+                save_name = input("What is the name of the save file? ")
+            elif len(args) == 2:
+                save_name = args[1]
+            if source == "file":
+                self.save_to_file(save_name)
+            if source == "database":
+                self.load_from_database(save_name)
+        except ValueError as error:
+            print(error)
+        except FileNotFoundError:
+            print("The file name you specified does not exist")
 
-    #            self.load_from_file(savename)
-    #        if source == "file":
-    #        elif source == "database":
-    #            self.load_from_database(savename)
+    def load_from_file(self, filename):
+        file = open(filename, "r")
+        file_contents = json.load(file)
+        print("loading from file...")
+        self.game_info = GameInfo()
+        for key, value in file_contents.items():
+            match key:
+                case "player":
+                    self.game_info.player = Player(value["health"],
+                                                   value["has_totem"],
+                                                   value["x"],
+                                                   value["y"]
+                                                   )
+                    self.game_info.player.items = value["items"]
+                case "dev_card_deck":
+                    for card in file_contents[key]:
+                        new_card = globals()[f'{card["card_item"]["name"].replace(" ", "")}Card']()
+                        self.game_info.dev_card_deck.append(new_card)
+                case "indoor_tile_deck":
+                    for tile in file_contents[key]:
+                        new_tile = globals()[f'{tile["name"].replace(" ", "")}']()
+                            #if key == "name":
+                            #    card_name = value["name"].replace(" ", "")
+                            #    item = globals()[card_name]
+                            #    self.game_info.dev_card_deck.append(item)
+                        self.game_info.indoor_tile_deck.append(new_tile)
+                case "outdoor_tile_deck":
+                    for tile in file_contents[key]:
+                        new_tile = globals()[f'{tile["name"].replace(" ", "")}']()
+                        self.game_info.outdoor_tile_deck.append(new_tile)
+                case "current_tiles":
+                    for key, value in file_contents[key].items():
+                        new_tile = globals()[f'{value["name"].replace(" ", "")}']()
+                        self.game_info.current_tiles[key] = new_tile
+                case "item_on_ground":
+                    if value is not None:
+                        the_item = globals()[f'{value["name"].replace(" ", "")}']()
+                        self.game_info.item_on_ground = the_item
+                case _:
+                    setattr(self.game_info, key, value)
+        self.update_prompt()
 
-    #    def load_from_file(self, filename):
-
-    #    def load_from_database(self, savename):
+    def load_from_database(self, save_name):
+        database = Database()
+        print("loading from database...")
+        self.game_info = pickle.loads(database.get_save_game_from_table(save_name)[0][0])
+        self.update_prompt()
 
     def do_save(self, args):
         """
@@ -223,25 +284,36 @@ class TheGame(Cmd):
         destination = args[0]
         try:
             if destination == "":
-                source = input("Where do you want to save your file to? file/database ").lower()
-                if source != "file" or source != "database":
+                destination = input("Where do you want to save your file to? file/database ").lower()
+                if destination not in ["file", "database"]:
                     raise ValueError("You need to enter either file or database. Please try again")
-            elif destination == "file":
-                if len(args) == 1:
-                    savename = input("What is the name of the save file? ")
-                else:
-                    savename = args[1]
-                self.save_to_file(savename)
+            if len(args) == 1:
+                save_name = input("What is the name of the save file? ")
+            elif len(args) == 2:
+                save_name = args[1]
+            if destination == "file":
+                self.save_to_file(save_name)
+            if destination == "database":
+                self.save_to_database(save_name)
         except ValueError as error:
             print(error)
 
-    def save_to_file(self, savename):
+    def save_to_file(self, save_name):
         try:
             print("saving")
-            with open(savename, "x") as file:
+            with open(save_name, "x") as file:
                 file.write(str(self.game_info))
         except FileExistsError:
             print("This file already exists, please try again with a different name")
+
+    def save_to_database(self,save_name):
+        database = Database()
+        database.create_tables()
+        save_game_to_add = pickle.dumps(self.game_info)
+        save_name = save_name
+        save_info = (save_name, save_game_to_add)
+        database.add_save_game_to_table(save_info)
+
     def resolve_dev_card(self):
         dev_card_action = self.get_dev_card_info(self.draw_dev_card())
         try:
@@ -268,14 +340,6 @@ class TheGame(Cmd):
                     return dev_card.eleven_info
         except AttributeError:
             print("Something has gone wrong in get_dev_card_info")
-
-#    def do_database(self, args):
-#        database = Database()
-#        database.create_tables()
-#        item_to_add = pickle.dumps(ChainsawCard())
-#        print(type(item_to_add))
-#        database.add_item_to_table(["Chainsaw", item_to_add])
-#        print(pickle.loads(database.get_item_from_table(["Chainsaw"])[1]))
 
     def dev_card_event_action(self, dev_card_action):
         try:
@@ -384,7 +448,7 @@ class TheGame(Cmd):
         else:
             new_card = self.draw_outdoor_tile_card()
         # need to be able to rotate once placed
-        self.game_info.current_tiles[(self.get_player_x(), self.get_player_y())] = new_card
+        self.game_info.current_tiles[f"{self.get_player_x()} {self.get_player_y()}"] = new_card
 
     #    needs to be implemented
     #    def rotate_new_card(self, ):
@@ -472,7 +536,7 @@ class TheGame(Cmd):
             line_2 = ""
             line_3 = ""
             for x in range(x_coord - 2, x_coord + 3):
-                if self.game_info.current_tiles.get((x, y)) is None:
+                if self.game_info.current_tiles.get(f"{x} {y}") is None:
                     line_1 = line_1 + "   "
                     line_2 = line_2 + "   "
                     line_3 = line_3 + "   "
@@ -482,13 +546,13 @@ class TheGame(Cmd):
                     west_exit = " "
                     south_exit = " "
                     player_present = " "
-                    if not self.game_info.current_tiles[x, y].exits["n"]:
+                    if not self.game_info.current_tiles[f"{x} {y}"].exits["n"]:
                         north_exit = "━"
-                    if not self.game_info.current_tiles[x, y].exits["e"]:
+                    if not self.game_info.current_tiles[f"{x} {y}"].exits["e"]:
                         east_exit = "┃"
-                    if not self.game_info.current_tiles[x, y].exits["w"]:
+                    if not self.game_info.current_tiles[f"{x} {y}"].exits["w"]:
                         west_exit = "┃"
-                    if not self.game_info.current_tiles[x, y].exits["s"]:
+                    if not self.game_info.current_tiles[f"{x} {y}"].exits["s"]:
                         south_exit = "━"
                     if self.get_player_x() == x and self.get_player_y() == y:
                         player_present = "X"

@@ -4,8 +4,11 @@ Each DevCard has one item associated with them
 Each DevCards ALWAYS has a description and potentially an item OR a number of zombies OR either a positive or negative
 change to the players health
 """
+import json
+
 from DevCards.DevCard import DevCard
-from Items.Candle import Candle
+from Items.candle import Candle
+
 
 class CandleCard(DevCard):
     def __init__(self):

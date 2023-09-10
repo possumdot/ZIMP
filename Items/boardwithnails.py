@@ -1,9 +1,9 @@
 from Items.Item import Item
 
 
-class NailBoard(Item):
+class BoardWithNails(Item):
     def __init__(self):
-        self.name = "Board with Nails"
+        self.name = "Board With Nails"
         self.description = "Adds 1 to your attack score when attacking with this item"
         self.attack_modifier = 1
         self.health_modifier = 0

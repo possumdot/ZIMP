@@ -5,9 +5,10 @@ Each DevCards ALWAYS has a description and potentially an item OR a number of zo
 change to the players health
 """
 import json
+from abc import ABC
 
 
-class DevCard:
+class DevCard(ABC):
     def __init__(self):
         self.item = None
         self.nine_info = {"action": "",

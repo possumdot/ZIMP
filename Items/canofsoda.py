@@ -1,9 +1,9 @@
 from Items.Item import Item
 
 
-class Soda(Item):
+class CanOfSoda(Item):
     def __init__(self):
-        self.name = "Can of Soda"
+        self.name = "Can Of Soda"
         self.description = "Add 2 to health points on use"
         self.attack_modifier = 0
         self.health_modifier = 2

@@ -5,7 +5,7 @@ Each DevCards ALWAYS has a description and potentially an item OR a number of zo
 change to the players health
 """
 from DevCards.DevCard import DevCard
-from Items.Gasoline import Gasoline
+from Items.gasoline import Gasoline
 
 
 class GasolineCard(DevCard):

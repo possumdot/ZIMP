@@ -1,7 +1,7 @@
 import unittest
 
 from DevCards.DevCard import DevCard
-from Items.NailBoard import NailBoard
+from Items.boardwithnails import BoardWithNails
 from TheGame import TheGame
 from Player import Player
 from DevCards.CandleCard import CandleCard
@@ -10,9 +10,9 @@ from DevCards.GasolineCard import GasolineCard
 from DevCards.GolfClubCard import GolfClubCard
 from DevCards.GrislyFemurCard import GrislyFemurCard
 from DevCards.MacheteCard import MacheteCard
-from DevCards.NailBoardCard import NailBoardCard
+from DevCards.BoardWithNailsCard import BoardWithNailsCard
 from DevCards.OilCard import OilCard
-from DevCards.SodaCard import SodaCard
+from DevCards.CanOfSodaCard import CanOfSodaCard
 from Tiles.Indoor.Bathroom import Bathroom
 from Tiles.Indoor.Bedroom import Bedroom
 from Tiles.Indoor.DiningRoom import DiningRoom
@@ -83,9 +83,9 @@ class Testing(unittest.TestCase):
                      GolfClubCard,
                      GrislyFemurCard,
                      MacheteCard,
-                     NailBoardCard,
+                     BoardWithNailsCard,
                      OilCard,
-                     SodaCard
+                     CanOfSodaCard
                      )
         for dev_card in self.the_game.dev_card_deck:
             self.assertIsInstance(dev_card, test_deck)
@@ -234,7 +234,7 @@ class Testing(unittest.TestCase):
         self.the_game.setup_game()
         self.the_game.game_turn_state = "zombies"
         self.the_game.zombie_count = 3
-        test_weapon = NailBoard()
+        test_weapon = BoardWithNails()
         self.the_game.player.items["item1"] = test_weapon
         self.the_game.do_fight("NailBoard")
         self.assertEqual(self.the_game.player.health, 4)

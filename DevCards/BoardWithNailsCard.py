@@ -5,13 +5,13 @@ Each DevCards ALWAYS has a description and potentially an item OR a number of zo
 change to the players health
 """
 from DevCards.DevCard import DevCard
-from Items.NailBoard import NailBoard
+from Items.boardwithnails import BoardWithNails
 
 
-class NailBoardCard(DevCard):
+class BoardWithNailsCard(DevCard):
     def __init__(self):
         super().__init__()
-        self.card_item = NailBoard()
+        self.card_item = BoardWithNails()
         self.nine_info = {"action": "item",
                           "description": "You see an Item on the ground",
                           "zombies": None,

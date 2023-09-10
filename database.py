@@ -7,43 +7,32 @@ class Database:
         db_connection = sqlite3.connect("ZIMP.db")
         db_cursor = db_connection.cursor()
         try:
-            db_cursor.execute("""CREATE TABLE items(
-                                name STRING PRIMARY KEY NOT NULL,
-                                item BLOB)""")
-        except sqlite3.OperationalError:
-            pass
-        try:
-            db_cursor.execute("""CREATE TABLE tiles_indoor(
-                                name STRING PRIMARY KEY NOT NULL,
-                                tile BLOB)""")
+            db_cursor.execute("""CREATE TABLE save_games(
+                                save_name STRING PRIMARY KEY NOT NULL,
+                                save_game BLOB NOT NULL)""")
+            db_connection.close()
         except sqlite3.OperationalError:
             pass
 
+    def add_save_game_to_table(self, save_info):
         try:
-            db_cursor.execute("""CREATE TABLE tiles_outdoor(
-                                    name STRING PRIMARY KEY NOT NULL,
-                                    tile BLOB)""")
-        except sqlite3.OperationalError:
-            pass
+            db_connection = sqlite3.connect("ZIMP.db")
+            db_cursor = db_connection.cursor()
+            sql = "INSERT INTO save_games(save_name, save_game) VALUES(?, ?)"
 
-        try:
-            db_cursor.execute("""CREATE TABLE dev_cards(
-                                    name STRING PRIMARY KEY NOT NULL,
-                                    dev_card BLOB)""")
-        except sqlite3.OperationalError:
-            pass
+            db_cursor.execute(sql, save_info)
+            db_connection.commit()
+            db_connection.close()
+        except sqlite3.IntegrityError:
+            print("This save game already exists. Please choose another name.")
 
-    def add_item_to_table(self, items):
+    def get_save_game_from_table(self, save_name):
         db_connection = sqlite3.connect("ZIMP.db")
         db_cursor = db_connection.cursor()
 
-        db_cursor.execute("INSERT INTO items VALUES(?, ?)", items)
-        db_connection.commit()
+        sql = 'SELECT save_game FROM save_games WHERE save_name = ?'
 
-    def get_item_from_table(self, key):
-        db_connection = sqlite3.connect("ZIMP.db")
-        db_cursor = db_connection.cursor()
-
-        result = db_cursor.execute("SELECT (?), item FROM items", key)
-        result = result.fetchone()
+        result = db_cursor.execute(sql, (save_name,))
+        result = result.fetchall()
+        db_connection.close()
         return result
