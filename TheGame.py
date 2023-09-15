@@ -48,9 +48,6 @@ class TheGame(Cmd):
         self.game_info = GameInfo()
         self.prompt = ">>> "
 
-    def do_test(self, args):
-        print(str(self.game_info))
-
     def do_start(self, args):
         """Starts the game, only usable if the game hasn't already started."""
         try:
@@ -64,7 +61,7 @@ class TheGame(Cmd):
             pass
 
     def do_restart(self, args):
-        """Restarts a game in progress"""
+        """Restarts a game in progress, only works if the gam has started"""
         try:
             if self.is_command_valid("restart"):
                 confirm_restart = input("Are you sure you want to restart? Y/N\n"
@@ -83,6 +80,8 @@ class TheGame(Cmd):
             pass
 
     def setup_game(self):
+        """ Set's up a new game with all default values, places everything in to the game_info object
+        """
         print("Welcome to Zombie in my Pocket. Type Help to view your available commands."
               "\n You're standing in the foyer of a house. There a door to the North of you.")
         self.game_info = GameInfo()
@@ -112,6 +111,9 @@ class TheGame(Cmd):
             print("You can't move right now, there are zombies to fight")
 
     def check_valid_move(self, direction):
+        """ Takes a direction as an argument, if no direction is given, prompts the user for a direction.
+            Direction is then checked to see if it's valid and if it is, passes the direction on to the move method
+        """
         if direction == "":
             direction = input("Please enter a direction (NEWS or North East West South)")
         direction = direction.lower()
@@ -133,6 +135,8 @@ class TheGame(Cmd):
                 print("There is no exit here")
 
     def move_player(self, direction):
+        """ Takes a direction as an argument and attempts to move the player to the new coordinates
+        """
         try:
             match direction:
                 case "n":
@@ -153,6 +157,8 @@ class TheGame(Cmd):
         return self.game_info.player.y
 
     def get_dev_card_deck(self):
+        """ Creates instances of the dev_card objects and then places them all in a list that the game can then pull from later
+        """
         candle_card = CandleCard()
         chainsaw_card = ChainsawCard()
         gasoline_card = GasolineCard()
@@ -171,6 +177,8 @@ class TheGame(Cmd):
             _ = self.draw_dev_card()
 
     def get_indoor_tile_deck(self):
+        """ Creates instances of all the Tile objects that belong inside then places them all in a list that the game can then pull from later
+        """
         bathroom_tile = Bathroom()
         bedroom_tile = Bedroom()
         dining_room_tile = DiningRoom()
@@ -182,6 +190,8 @@ class TheGame(Cmd):
                 storage]
 
     def get_outdoor_tile_deck(self):
+        """ Creates instances of all the Tile objects that belong outside then places them all in a list that the game can then pull from later
+        """
         garage_tile = Garage()
         garden_tile = Garden()
         graveyard_tile = Graveyard()
@@ -191,8 +201,9 @@ class TheGame(Cmd):
         yard3_tile = Yard()
         return [garage_tile, garden_tile, graveyard_tile, sitting_area_tile, yard1_tile, yard2_tile, yard3_tile]
 
-    # returns a card and removes it from the active deck, if no more cards exists, time passes
     def draw_dev_card(self):
+    """ Returns a card and removes it from the active deck, if no more cards exists, time passes
+    """
         if len(self.game_info.dev_card_deck) == 0:
             self.game_info.dev_card_deck = self.get_dev_card_deck()
             self.shuffle_dev_card_deck()
@@ -227,6 +238,10 @@ class TheGame(Cmd):
             print("The file name you specified does not exist")
 
     def load_from_file(self, filename):
+        """ Takes a file save name that exists and then reads the file contents as json.
+            It then reads through all lines and handles keys in different ways, dynamically rebuilding the game into
+            the saved state
+        """
         file = open(filename, "r")
         file_contents = json.load(file)
         print("loading from file...")
@@ -269,6 +284,8 @@ class TheGame(Cmd):
         self.update_prompt()
 
     def load_from_database(self, save_name):
+        """ Takes a save name which is a key in the database and then unpickles the returned value from the database
+        """
         database = Database()
         print("loading from database...")
         self.game_info = pickle.loads(database.get_save_game_from_table(save_name)[0][0])
@@ -299,6 +316,8 @@ class TheGame(Cmd):
             print(error)
 
     def save_to_file(self, save_name):
+        """ Saves a jsonified version of the game_info object to a file with save_name as the filename
+        """
         try:
             print("saving")
             with open(save_name, "x") as file:
@@ -307,6 +326,8 @@ class TheGame(Cmd):
             print("This file already exists, please try again with a different name")
 
     def save_to_database(self,save_name):
+        """ Saves a pickled copy of the game_info object to a database with save_name as the key
+        """
         database = Database()
         database.create_tables()
         save_game_to_add = pickle.dumps(self.game_info)
@@ -330,6 +351,8 @@ class TheGame(Cmd):
 
     # Get the info dict from the DevCard relating to the current in-game time
     def get_dev_card_info(self, dev_card):
+        """ Returns a dictionary of actions from a dev_card that correspond to the ingame time
+        """
         try:
             match self.game_info.time:
                 case 2100:
@@ -342,6 +365,9 @@ class TheGame(Cmd):
             print("Something has gone wrong in get_dev_card_info")
 
     def dev_card_event_action(self, dev_card_action):
+             """ Gets called if the dev_cards action is an event
+                 Applies a health change to the player based on what the card has at the time
+             """
         try:
             print(dev_card_action["description"])
             if dev_card_action["health_change"] > 0:
@@ -356,6 +382,9 @@ class TheGame(Cmd):
             print("Something has gone wrong with the dev card event action")
 
     def dev_card_zombies_action(self, dev_card_action):
+        """ Gets called if the dev_cards action is a zombies event
+            Let's the player know there are zombies to fight and sets the count from the card into the game_info object
+        """
         try:
             print(dev_card_action["description"])
             print("You can stand and FIGHT or RUN")
@@ -381,7 +410,9 @@ class TheGame(Cmd):
             print("There is nothing to fight")
 
     def resolve_combat(self, item=None):
-        # calculating damage to apply to player
+        """ Resolves the combat between the player and the amount of zombies in the room. 
+            Can take an item as an argument and will use the attack_modifier of that weapon if given
+        """
         if item is not None:
             damage = self.game_info.zombie_count - (self.game_info.player.get_attack() + item.attack_modifier)
         else:
@@ -400,6 +431,9 @@ class TheGame(Cmd):
         self.update_prompt()
 
     def dev_card_item_action(self, dev_card):
+        """ Gets called if the dev_cards action is an item 
+            Places the item on the ground and gives the player the option to pick it up
+        """
         print(f"There is a {dev_card.card_item.name} lying on the ground")
         self.game_info.item_on_ground = dev_card.card_item
 
@@ -415,29 +449,34 @@ class TheGame(Cmd):
             self.update_prompt()
 
     def swap_item(self, itemslot):
+        """ Swaps an item that's on the ground with a spcified one in the players item slots
+        """
         item_on_ground = self.game_info.item_on_ground
         player_item = self.game_info.player.items[itemslot]
         self.game_info.item_on_ground = player_item
         self.game_info.player.items[itemslot] = item_on_ground
 
-    # returns a card from the indoor tile deck and removes it from the deck, returns false if no more cards exist
     def draw_indoor_tile_card(self):
+        """  returns a card from the indoor tile deck and removes it from the deck, returns false if no more cards exist
+        """
         if len(self.game_info.indoor_tile_deck) > 0:
             result = random.randint(0, len(self.game_info.indoor_tile_deck) - 1)
             return self.game_info.indoor_tile_deck.pop(result)
         else:
             return False
 
-    # returns a card from the outdoor tile deck and removes it from the deck, returns false if no more cards exist
     def draw_outdoor_tile_card(self):
+        """ returns a card from the outdoor tile deck and removes it from the deck, returns false if no more cards exist
+        """
         if len(self.game_info.outdoor_tile_deck) > 0:
             result = random.randint(0, len(self.game_info.outdoor_tile_deck) - 1)
             return self.game_info.outdoor_tile_deck.pop(result)
         else:
             return False
 
-    # changes the time
     def time_passes(self):
+        """ changes the time by an hour
+        """
         self.game_info.time = self.game_info.time + 100
 
     def add_new_tile_card(self, coords):
@@ -462,9 +501,13 @@ class TheGame(Cmd):
             return args.lower().split()
 
     def update_prompt(self):
+        """ Updates the cmd prompt to show the map and current player stats
+        """
         self.prompt = self.prompt_builder()
 
     def prompt_builder(self):
+        """ Builds the prompt for the player with conditionals in place for zombies and items on the ground
+        """
         self.get_map()
         the_string = (f"Health: {self.game_info.player.get_health()} \n"
                       f"Item1: {self.game_info.player.get_item1()} \n"
@@ -477,6 +520,8 @@ class TheGame(Cmd):
         return the_string
 
     def is_command_valid(self, command):
+        """ Checks to see if a command is valid based on the current game state
+        """
         # clears the cmd but only if open through Windows cmd prompt
         os.system('cls')
         if self.game_info.game_turn_state is not None:
@@ -524,6 +569,9 @@ class TheGame(Cmd):
             return False
 
     def get_map(self):
+        """ Builds a 3 x 3 unicode map with the player in the middle of the rooms currently placed.
+            Shows doors and walls. Does not currently work correctly with outdoor tiles
+        """
         x_coord = self.game_info.player.x
         y_coord = self.game_info.player.y
         count = 0
