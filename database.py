@@ -4,6 +4,8 @@ import sqlite3
 class Database:
 
     def create_tables(self):
+        """ Create the save_game tables in the database
+        """
         db_connection = sqlite3.connect("ZIMP.db")
         db_cursor = db_connection.cursor()
         try:
@@ -15,6 +17,8 @@ class Database:
             pass
 
     def add_save_game_to_table(self, save_info):
+        """ Tries to add a save_game to the save_games table
+        """
         try:
             db_connection = sqlite3.connect("ZIMP.db")
             db_cursor = db_connection.cursor()
@@ -27,6 +31,8 @@ class Database:
             print("This save game already exists. Please choose another name.")
 
     def get_save_game_from_table(self, save_name):
+        """ Loads a save_game from the save_games table
+        """
         db_connection = sqlite3.connect("ZIMP.db")
         db_cursor = db_connection.cursor()
 
